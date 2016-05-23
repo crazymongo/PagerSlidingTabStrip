@@ -89,6 +89,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	private int tabTextSize = 12;
 	private int tabTextColor = 0xFF666666;
+	private int tabTextColorSelected = 0xFF030303;
 	private Typeface tabTypeface = null;
 	private int tabTypefaceStyle = Typeface.BOLD;
 
@@ -271,6 +272,11 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 				tab.setTypeface(tabTypeface, tabTypefaceStyle);
 				tab.setTextColor(tabTextColor);
 
+				if(i==currentPosition){
+					tab.setTextColor(tabTextColorSelected);
+				}else {
+					tab.setTextColor(tabTextColor);
+				}
 				// setAllCaps() is only available from API 14, so the upper case is made manually if we are on a
 				// pre-ICS-build
 				if (textAllCaps) {
@@ -283,6 +289,26 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			}
 		}
 
+	}
+
+	private void updateTabState(){
+		View v ;
+		TextView tab;
+		int position=pager.getCurrentItem();
+		for (int i = 0; i < tabCount; i++) {
+
+			v = tabsContainer.getChildAt(i);
+
+			if (v instanceof TextView) {
+
+				tab = (TextView) v;
+				if (i == position) {
+					tab.setTextColor(tabTextColorSelected);
+				} else {
+					tab.setTextColor(tabTextColor);
+				}
+			}
+		}
 	}
 
 	private void scrollToChild(int position, int offset) {
@@ -369,8 +395,15 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 		@Override
 		public void onPageScrollStateChanged(int state) {
-			if (state == ViewPager.SCROLL_STATE_IDLE) {
-				scrollToChild(pager.getCurrentItem(), 0);
+			switch (state){
+				case ViewPager.SCROLL_STATE_SETTLING:
+					updateTabState();
+					break;
+				case ViewPager.SCROLL_STATE_IDLE:
+					scrollToChild(pager.getCurrentItem(), 0);
+					break;
+				default:
+					break;
 			}
 
 			if (delegatePageListener != null) {
@@ -496,6 +529,16 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		updateTabStyles();
 	}
 
+	public void setSelectedTextColor(int textColor) {
+		this.tabTextColorSelected = textColor;
+		updateTabStyles();
+	}
+
+	public void setSelectedTextColorResource(int resId) {
+		this.tabTextColorSelected = getResources().getColor(resId);
+		updateTabStyles();
+	}
+
 	public void setTextColorResource(int resId) {
 		this.tabTextColor = getResources().getColor(resId);
 		updateTabStyles();
@@ -503,6 +546,10 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	public int getTextColor() {
 		return tabTextColor;
+	}
+
+	public int getSelectedTextColor(){
+		return tabTextColorSelected;
 	}
 
 	public void setTypeface(Typeface typeface, int style) {
